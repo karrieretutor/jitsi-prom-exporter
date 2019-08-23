@@ -53,12 +53,12 @@ func main() {
 		os.Exit(2)
 	}
 
-	xmppPort, ok := os.LookupEnv("XMPP_SERVER")
+	xmppPort, ok := os.LookupEnv("XMPP_PORT")
 	if !ok || xmppPort == "" {
 		xmppPort = "5222"
 	}
 
-	xmppServer, ok := os.LookupEnv("XMPP_PORT")
+	xmppServer, ok := os.LookupEnv("XMPP_SERVER")
 	if !ok {
 		fmt.Println("no xmpp server specified")
 		os.Exit(2)
@@ -111,6 +111,10 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 
 }
 
+func postConnect(s xmpp.Sender) {
+	fmt.Println("connected")
+}
+
 func connectClient(c xmpp.Config, r *xmpp.Router) {
 	client, err := xmpp.NewClient(c, r)
 	if err != nil {
@@ -118,7 +122,7 @@ func connectClient(c xmpp.Config, r *xmpp.Router) {
 		signals <- iFail
 	}
 
-	cm := xmpp.NewStreamManager(client, nil)
+	cm := xmpp.NewStreamManager(client, postConnect)
 	err = cm.Run()
 	if err != nil {
 		fmt.Printf("xmpp connection manager returned with error: %s\n", err.Error())
