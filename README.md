@@ -1,5 +1,5 @@
 # Jitsi Prometheus exporter
-Exporter that grabs various metrics from [Jitsi](https://jitsi.org), especially form the video bridges, and publishes them as [Prometheu](https://prometheus.io) metrics.
+Exporter that grabs various metrics from [Jitsi](https://jitsi.org), especially form the video bridges, and publishes them as [Prometheus](https://prometheus.io) metrics.
 The basic idea is to enter the jvbbrewery MUC room and listen to the presence broadcasts from the JVBs.
 
 # env configuration
