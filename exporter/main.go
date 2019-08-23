@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	uuid "github.com/satori/go.uuid"
 	xmpp "gosrc.io/xmpp"
 	stanza "gosrc.io/xmpp/stanza"
 )
@@ -19,7 +20,10 @@ const (
 )
 
 var osSignals = make(chan os.Signal, 1)
-var signals = make(chan iSig, 1)
+var signals = make(chan iSig)
+
+var jvbbrewery string
+var cm *xmpp.StreamManager
 
 func main() {
 	//set up os signal listener
@@ -64,7 +68,20 @@ func main() {
 		os.Exit(2)
 	}
 
+	breweryroom, ok := os.LookupEnv("JVB_BREWERY_MUC")
+	if !ok || breweryroom == "" {
+		breweryroom = "jvbbrewery"
+	}
+
+	internalMucDomain, ok := os.LookupEnv("INTERNAL_MUC_DOMAIN")
+	if !ok {
+		fmt.Println("internal muc domain not specified")
+		os.Exit(2)
+	}
+	jvbbrewery = breweryroom + "@" + internalMucDomain
+
 	jid := xmppUser + "@" + xmppAuthDomain
+	fmt.Printf("jid: %s\n", jid)
 	address := xmppServer + ":" + xmppPort
 	config := xmpp.Config{
 		Address:      address,
@@ -96,7 +113,7 @@ func main() {
 }
 
 func shutdown() {
-
+	cm.Stop()
 }
 
 func handleMessage(s xmpp.Sender, p stanza.Packet) {
@@ -112,7 +129,25 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 }
 
 func postConnect(s xmpp.Sender) {
-	fmt.Println("connected")
+	client, ok := s.(*xmpp.Client)
+	if !ok {
+		fmt.Println("post connect sender not a client, cannot proceed")
+		signals <- iFail
+	}
+
+	uuid, _ := uuid.NewV4()
+	id := uuid.String()
+
+	//join jvbbrewery room
+	presence := stanza.NewPresence(stanza.Attrs{
+		To:   jvbbrewery + "/prom-exporter",
+		From: client.Session.BindJid,
+		Id:   id,
+	})
+
+	presence.Extensions = append(presence.Extensions, stanza.MucPresence{})
+
+	client.Send(presence)
 }
 
 func connectClient(c xmpp.Config, r *xmpp.Router) {
@@ -122,7 +157,9 @@ func connectClient(c xmpp.Config, r *xmpp.Router) {
 		signals <- iFail
 	}
 
-	cm := xmpp.NewStreamManager(client, postConnect)
+	fmt.Println("starting streammanger")
+
+	cm = xmpp.NewStreamManager(client, postConnect)
 	err = cm.Run()
 	if err != nil {
 		fmt.Printf("xmpp connection manager returned with error: %s\n", err.Error())

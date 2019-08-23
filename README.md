@@ -10,6 +10,10 @@ env | description | default value
 `XMPP_AUTH_DOMAIN` | xmpp domain to authenticate against |
 `XMPP_SERVER` | xmpp server host name | 
 `XMPP_PORT` | xmpp port to use | `5222`
+`JVB_BREWERY_MUC` | name of jvbbrewery MUC room to join; it will join with `prom-exporter` as nickname -> `JVB_BREWERY_MUC@INTERNAL_MUC_DOMAIN/prom-exporter` | jvbbrewery
+`INTERNAL_MUC_DOMAIN` | internal muc domain (this is where the jvbbrewery muc resides) | 
+
+`XMPP_USER` and `XMPP_AUTH_DOMAIN` are used to construct the JID `XMPP_USER@XMPP_AUTH_DOMAIN`
 
 # Register user in prosody
 You will have to create a XMPP user in Prosody, do this with:
