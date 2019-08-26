@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/xml"
 	"fmt"
 	"os"
 	"os/signal"
@@ -97,6 +98,8 @@ func main() {
 	router.HandleFunc("iq", handleIq)
 	router.HandleFunc("presence", handlePresence)
 
+	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{"http://jitsi.org/protocol/colibri", "stats"}, Stats{})
+
 	go connectClient(config, router)
 
 	//keep process running
@@ -125,7 +128,25 @@ func handleIq(s xmpp.Sender, p stanza.Packet) {
 }
 
 func handlePresence(s xmpp.Sender, p stanza.Packet) {
+	presence, ok := p.(stanza.Presence)
+	if !ok {
+		fmt.Println("received presence which is no presence, skipping")
+		return
+	}
 
+	fmt.Println(presence)
+	// err := presence.UnmarshalXML(&xml.Decoder{
+	// 	Strict: true,
+	// }, xml.StartElement{
+
+	// 	Name: xml.Name{
+	// 		Local: "stats",
+	// 		Space: "http://jitsi.org/protocol/colibri",
+	// 	},
+	// })
+	// if err != nil {
+	// 	fmt.Printf("Encountered error while unmarshalling presence xml: %s", err.Error())
+	// }
 }
 
 func postConnect(s xmpp.Sender) {
@@ -147,7 +168,10 @@ func postConnect(s xmpp.Sender) {
 
 	presence.Extensions = append(presence.Extensions, stanza.MucPresence{})
 
-	client.Send(presence)
+	err := client.Send(presence)
+	if err != nil {
+		//err handling
+	}
 }
 
 func connectClient(c xmpp.Config, r *xmpp.Router) {
