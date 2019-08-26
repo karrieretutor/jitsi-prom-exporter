@@ -99,6 +99,7 @@ func main() {
 	router.HandleFunc("presence", handlePresence)
 
 	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jitsi.org/protocol/colibri", Local: "stats"}, Stats{})
+	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jabber.org/protocol/muc#user", Local: "x"}, User{})
 
 	go connectClient(config, router)
 
@@ -138,11 +139,15 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 
 	//check extensions
 	for _, e := range presence.Extensions {
-		switch stats := e.(type) {
+		switch extension := e.(type) {
 		case *Stats:
-			fmt.Printf("\nstats: \n%v\n", stats.Stats)
+			fmt.Printf("\nstats: \n%v\n", extension.Stats)
+		case *User:
+			for _, i := range extension.Items {
+				fmt.Printf("extension Jid: %s\n", i.Jid)
+			}
 		default:
-			fmt.Printf("Fount unknown extension: %T\n", stats)
+			fmt.Printf("Found unknown extension: %T\n", extension)
 		}
 	}
 	// err := presence.UnmarshalXML(&xml.Decoder{
