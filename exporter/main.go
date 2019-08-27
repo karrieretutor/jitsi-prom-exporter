@@ -1,18 +1,18 @@
-/* 
+/*
  *  Copyright 2019 karriere tutor GmbH
- *  
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- *  
+ *
  *  	http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *  
+ *
  */
 
 package main
@@ -21,9 +21,12 @@ import (
 	"crypto/tls"
 	"encoding/xml"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	uuid "github.com/satori/go.uuid"
 	xmpp "gosrc.io/xmpp"
@@ -42,6 +45,13 @@ var signals = make(chan iSig)
 
 var jvbbrewery string
 var cm *xmpp.StreamManager
+
+func init() {
+	//xmpp stuff
+	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jitsi.org/protocol/colibri", Local: "stats"}, Stats{})
+	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jabber.org/protocol/muc#user", Local: "x"}, User{})
+
+}
 
 func main() {
 	//set up os signal listener
@@ -115,10 +125,17 @@ func main() {
 	router.HandleFunc("iq", handleIq)
 	router.HandleFunc("presence", handlePresence)
 
-	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jitsi.org/protocol/colibri", Local: "stats"}, Stats{})
-	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jabber.org/protocol/muc#user", Local: "x"}, User{})
-
 	go connectClient(config, router)
+
+	//start serving prom metrics
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		err := http.ListenAndServe(":8080", nil)
+		if err != nil {
+			fmt.Printf("Unable to serve prom metrics: %s\n", err.Error())
+			signals <- iFail
+		}
+	}()
 
 	//keep process running
 	for s := range signals {
