@@ -25,6 +25,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -38,10 +39,15 @@ type iSig int
 const (
 	iExit iSig = iota
 	iFail
+	iFailedToConnect
 )
 
 var osSignals = make(chan os.Signal, 1)
 var signals = make(chan iSig)
+var watchdog = connectWatchdog{
+	timeout:   5 * time.Second,
+	connected: false,
+}
 
 var jvbbrewery string
 var cm *xmpp.StreamManager
@@ -109,7 +115,6 @@ func main() {
 	jvbbrewery = breweryroom + "@" + internalMucDomain
 
 	jid := xmppUser + "@" + xmppAuthDomain
-	fmt.Printf("jid: %s\n", jid)
 	address := xmppServer + ":" + xmppPort
 	config := xmpp.Config{
 		Address:      address,
@@ -126,6 +131,9 @@ func main() {
 	router.HandleFunc("presence", handlePresence)
 
 	go connectClient(config, router)
+
+	//start the watchdog
+	go watchdog.watchConnection(signals)
 
 	//start serving prom metrics
 	go func() {
@@ -146,12 +154,16 @@ func main() {
 		case iFail:
 			shutdown()
 			os.Exit(1)
+		case iFailedToConnect:
+			os.Exit(2)
 		}
 	}
 }
 
 func shutdown() {
-	cm.Stop()
+	if cm != nil {
+		cm.Stop()
+	}
 }
 
 func handleMessage(s xmpp.Sender, p stanza.Packet) {
@@ -176,6 +188,9 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 		switch extension := e.(type) {
 		case *Stats:
 			fmt.Printf("\nstats: \n%v\n", extension.Stats)
+			for _, stat := range extension.Stats {
+				fmt.Printf("\"%s\": prometheus.Gauge,\n", stat.Name)
+			}
 		case *User:
 			for _, i := range extension.Items {
 				fmt.Printf("extension Jid: %s\n", i.Jid)
@@ -199,6 +214,8 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 }
 
 func postConnect(s xmpp.Sender) {
+	watchdog.connected = true
+
 	client, ok := s.(*xmpp.Client)
 	if !ok {
 		fmt.Println("post connect sender not a client, cannot proceed")
