@@ -27,6 +27,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	uuid "github.com/satori/go.uuid"
@@ -42,21 +44,26 @@ const (
 	iFailedToConnect
 )
 
-var osSignals = make(chan os.Signal, 1)
-var signals = make(chan iSig)
-var watchdog = connectWatchdog{
-	timeout:   5 * time.Second,
-	connected: false,
-}
+var (
+	osSignals = make(chan os.Signal, 1)
+	signals   = make(chan iSig)
+	watchdog  = connectWatchdog{
+		timeout:   5 * time.Second,
+		connected: false,
+	}
 
-var jvbbrewery string
-var cm *xmpp.StreamManager
+	jvbbrewery string
+	cm         *xmpp.StreamManager
+
+	jvbCollector = NewJvbCollector("", "", 30*time.Second)
+)
 
 func init() {
 	//xmpp stuff
 	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jitsi.org/protocol/colibri", Local: "stats"}, Stats{})
 	stanza.TypeRegistry.MapExtension(stanza.PKTPresence, xml.Name{Space: "http://jabber.org/protocol/muc#user", Local: "x"}, User{})
 
+	prometheus.MustRegister(jvbCollector)
 }
 
 func main() {
@@ -183,34 +190,30 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 
 	fmt.Println(presence)
 
-	//check extensions
-	for _, e := range presence.Extensions {
-		switch extension := e.(type) {
-		case *Stats:
-			fmt.Printf("\nstats: \n%v\n", extension.Stats)
-			for _, stat := range extension.Stats {
-				fmt.Printf("\"%s\": prometheus.Gauge,\n", stat.Name)
-			}
-		case *User:
-			for _, i := range extension.Items {
-				fmt.Printf("extension Jid: %s\n", i.Jid)
-			}
-		default:
-			fmt.Printf("Found unknown extension: %T\n", extension)
-		}
-	}
-	// err := presence.UnmarshalXML(&xml.Decoder{
-	// 	Strict: true,
-	// }, xml.StartElement{
+	if presence.Get(&Stats{}) && presence.Get(&User{}) {
+		var jvbJid string
+		var stats *Stats
 
-	// 	Name: xml.Name{
-	// 		Local: "stats",
-	// 		Space: "http://jitsi.org/protocol/colibri",
-	// 	},
-	// })
-	// if err != nil {
-	// 	fmt.Printf("Encountered error while unmarshalling presence xml: %s", err.Error())
-	// }
+		//check extensions
+		for _, e := range presence.Extensions {
+			switch extension := e.(type) {
+			case *Stats:
+				fmt.Printf("\nstats: \n%v\n", extension.Stats)
+				stats = extension
+			case *User:
+				for _, i := range extension.Items {
+					fmt.Printf("extension Jid: %s\n", i.Jid)
+					jvbJid = i.Jid
+				}
+			default:
+				fmt.Printf("Found unknown extension: %T, skipping packet\n", extension)
+				//this is extremely hack
+				return
+			}
+		}
+
+		jvbCollector.Update(jvbJid, stats)
+	}
 }
 
 func postConnect(s xmpp.Sender) {
