@@ -53,42 +53,42 @@ func newMetric(name string, metricType prometheus.ValueType, help string,
 }
 
 //JvbCollector collects metrics for jitsi JVBs
-//Namespace and Subsystem are for naming the metrics, see https://godoc.org/github.com/prometheus/client_golang/prometheus#Opts
+//NamePrefix for naming the metrics, see https://godoc.org/github.com/prometheus/client_golang/prometheus#Opts
 //Retention defines how long the jvb collector will consider a set of stats valid, once retention has passed since the last update,
 //	the stats set will not be included in the collect output anymore
 type JvbCollector struct {
-	Namespace, Subsystem string
-	Retention            time.Duration
-	statsSets            []statsSet
-	metrics              []metric
+	NamePrefix string
+	Retention  time.Duration
+	statsSets  []statsSet
+	metrics    []metric
 }
 
 //NewJvbCollector initializes a Jvb collector
-//namespace and subsystem may be empty if you dont need them
+//namespace and subsystem may be empty if you dont need them, see https://godoc.org/github.com/prometheus/client_golang/prometheus#Opts
 func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbCollector {
 	var collector = &JvbCollector{
-		Namespace: namespace,
-		Subsystem: subsystem,
 		Retention: retention,
 	}
 
 	var namePrefix = ""
-	if collector.Subsystem != "" {
-		namePrefix += collector.Subsystem
+	if subsystem != "" {
+		namePrefix += subsystem
 		namePrefix += "_"
 	}
 
-	if collector.Namespace != "" {
-		namePrefix += collector.Namespace
+	if namespace != "" {
+		namePrefix += namespace
 		namePrefix += "_"
 	}
+
+	collector.NamePrefix = namePrefix
 
 	var constLabels = prometheus.Labels{
 		"app": "jitsi",
 	}
 
 	//add metrics
-	collector.metrics = append(collector.metrics, newMetric(namePrefix+"total_packets_sent", prometheus.CounterValue,
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_sent", prometheus.CounterValue,
 		"total number of packets sent", []string{"jvb_instance"}, constLabels))
 
 	return collector
@@ -109,7 +109,7 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 			//match metric names with stats
 			for _, stat := range set.stats.Stats {
 				for _, metric := range c.metrics {
-					if metric.name == stat.Name {
+					if metric.name == c.NamePrefix+stat.Name {
 						value, err := strconv.Atoi(stat.Value)
 						if err != nil {
 							fmt.Printf("unable to convert value %s to numeric: %s\n", stat.Value, err.Error())
@@ -117,7 +117,7 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 						}
 						m, err := prometheus.NewConstMetric(metric.desc, metric.metricType, float64(value), set.jvbIdentifier)
 						if err != nil {
-							fmt.Printf("Unable to create metric: %s\n", err.Error())
+							fmt.Printf("Unable to create metric %s: %s\n", metric.name, err.Error())
 							continue
 						}
 						metrics <- m

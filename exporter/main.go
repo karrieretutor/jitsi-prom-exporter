@@ -55,7 +55,7 @@ var (
 	jvbbrewery string
 	cm         *xmpp.StreamManager
 
-	jvbCollector = NewJvbCollector("", "", 30*time.Second)
+	jvbCollector = NewJvbCollector(os.Getenv("JVB_METRIC_NAMESPACE"), os.Getenv("JVB_METRIC_SUBSYSTEM"), 30*time.Second)
 )
 
 func init() {

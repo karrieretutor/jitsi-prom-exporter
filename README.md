@@ -12,6 +12,8 @@ env | description | default value
 `XMPP_PORT` | xmpp port to use | `5222`
 `JVB_BREWERY_MUC` | name of jvbbrewery MUC room to join; it will join with `prom-exporter` as nickname -> `JVB_BREWERY_MUC@INTERNAL_MUC_DOMAIN/prom-exporter` | jvbbrewery
 `INTERNAL_MUC_DOMAIN` | internal muc domain (this is where the jvbbrewery muc resides) | 
+`JVB_METRIC_SUBSYSTEM` | Allows you to customize the metric names: `[<subsystem>_][<namespace>_]metricname`; both are optional |
+`JVB_METRIC_NAMESPACE` | see `JVB_METRIC_SUBSYSTEM` | 
 
 `XMPP_USER` and `XMPP_AUTH_DOMAIN` are used to construct the JID `XMPP_USER@XMPP_AUTH_DOMAIN`
 
