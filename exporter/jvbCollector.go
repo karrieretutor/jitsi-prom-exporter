@@ -20,6 +20,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -94,8 +95,8 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_tcp_connections", prometheus.GaugeValue,
 		"number of open tcp connections", []string{"jvb_instance"}, constLabels))
 
-	// collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conference_sizes", prometheus.CounterValue,
-	// 	"total number of packets sent", []string{"jvb_instance"}, constLabels))
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conference_sizes", prometheus.UntypedValue,
+		"total number of packets sent", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_sent_octo", prometheus.CounterValue,
 		"total number of octo packets sent", []string{"jvb_instance"}, constLabels))
@@ -239,6 +240,30 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 			for _, stat := range set.stats.Stats {
 				for _, metric := range c.metrics {
 					if metric.name == c.NamePrefix+stat.Name {
+
+						//special case for conference_sizes
+						if metric.name == c.NamePrefix+"conference_sizes" {
+							var sizes = make(map[float64]uint64)
+							value := strings.Trim(stat.Value, "[]")
+							values := strings.Split(value, ",")
+							var sum float64
+							for i, v := range values {
+								vuint, _ := strconv.ParseUint(v, 10, 64)
+								sizes[float64(i)] = vuint
+								sum += float64(vuint)
+							}
+
+							m, err := prometheus.NewConstHistogram(metric.desc, uint64(len(values)), sum, sizes, set.jvbIdentifier)
+
+							if err != nil {
+								fmt.Printf("Unable to publish %s: %s\n", metric.name, err.Error())
+								continue
+							}
+
+							metrics <- m
+							continue
+						}
+
 						value, err := strconv.ParseFloat(stat.Value, 64)
 						if err != nil {
 							fmt.Printf("unable to convert value %s to numeric: %s\n", stat.Value, err.Error())
