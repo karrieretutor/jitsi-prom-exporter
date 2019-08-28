@@ -205,10 +205,6 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 					fmt.Printf("extension Jid: %s\n", i.Jid)
 					jvbJid = i.Jid
 				}
-			default:
-				fmt.Printf("Found unknown extension: %T, skipping packet\n", extension)
-				//this is extremely hack
-				return
 			}
 		}
 
