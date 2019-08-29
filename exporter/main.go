@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -198,17 +199,16 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 		for _, e := range presence.Extensions {
 			switch extension := e.(type) {
 			case *Stats:
-				fmt.Printf("\nstats: \n%v\n", extension.Stats)
 				stats = extension
 			case *User:
 				for _, i := range extension.Items {
-					fmt.Printf("extension Jid: %s\n", i.Jid)
 					jvbJid = i.Jid
 				}
 			}
 		}
 
-		jvbCollector.Update(jvbJid, stats)
+		//we want to keep track of jvbs across their reconnects of autoscaled sets
+		jvbCollector.Update(strings.Split(jvbJid, "@")[0], stats)
 	}
 }
 
