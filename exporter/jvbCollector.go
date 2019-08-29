@@ -245,18 +245,29 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 						if metric.name == c.NamePrefix+"conference_sizes" {
 							var sizes = make(map[float64]uint64)
 							value := strings.Trim(stat.Value, "[]")
-							values := strings.Split(value, ",")
-							var sum float64
-							for i, v := range values {
+							var values []uint64
+							for _, v := range strings.Split(value, ",") {
 								vuint, _ := strconv.ParseUint(v, 10, 64)
-								sizes[float64(i)] = vuint
-								sum += float64(vuint)
+								values = append(values, vuint)
 							}
 
-							m, err := prometheus.NewConstHistogram(metric.desc, uint64(len(values)), sum, sizes, set.jvbIdentifier)
+							//calculate sum (makes this metric independent from conferences metric)
+							var sum uint64
+							for _, v := range values {
+								sum += v
+							}
+
+							//for the histgram buckets we need to omit the last field b/c the +inf bucket is added automatically
+							values = values[:len(values)-1]
+
+							for i, v := range values {
+								sizes[float64(i)] = v
+							}
+
+							m, err := prometheus.NewConstHistogram(metric.desc, sum, float64(sum), sizes, set.jvbIdentifier)
 
 							if err != nil {
-								fmt.Printf("Unable to publish %s: %s\n", metric.name, err.Error())
+								fmt.Printf("Unable to publish metric %s: %s\n", metric.name, err.Error())
 								continue
 							}
 
@@ -264,6 +275,7 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 							continue
 						}
 
+						//simple metrics
 						value, err := strconv.ParseFloat(stat.Value, 64)
 						if err != nil {
 							fmt.Printf("unable to convert value %s to numeric: %s\n", stat.Value, err.Error())
