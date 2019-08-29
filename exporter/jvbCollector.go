@@ -260,6 +260,17 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 							//for the histgram buckets we need to omit the last field b/c the +inf bucket is added automatically
 							values = values[:len(values)-1]
 
+							//the bucket values have to be cumulative
+							var i int
+							for i = len(values) - 1; i >= 0; i-- {
+								var cumulative uint64
+								var j int
+								for j = i; j >= 0; j-- {
+									cumulative += values[j]
+								}
+								values[i] = cumulative
+							}
+
 							for i, v := range values {
 								sizes[float64(i)] = v
 							}
