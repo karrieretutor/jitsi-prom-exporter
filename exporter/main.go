@@ -189,8 +189,6 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 		return
 	}
 
-	fmt.Println(presence)
-
 	if presence.Get(&Stats{}) && presence.Get(&User{}) {
 		var jvbJid string
 		var stats *Stats
