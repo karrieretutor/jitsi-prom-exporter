@@ -9,4 +9,6 @@ RUN go install -v ./...
 FROM alpine:latest
 COPY --from=golang /go/bin/exporter /usr/local/bin/
 
+EXPOSE 8080
+
 CMD ["exporter"]
