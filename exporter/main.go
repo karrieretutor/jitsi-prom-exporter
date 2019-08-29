@@ -88,7 +88,7 @@ func main() {
 
 	xmppPw, ok := os.LookupEnv("XMPP_PW")
 	if !ok {
-		fmt.Println("No liveness password specified, failing")
+		fmt.Println("No password specified, failing")
 		os.Exit(2)
 	}
 
