@@ -115,7 +115,7 @@ func main() {
 		breweryroom = "jvbbrewery"
 	}
 
-	internalMucDomain, ok := os.LookupEnv("INTERNAL_MUC_DOMAIN")
+	internalMucDomain, ok := os.LookupEnv("XMPP_INTERNAL_MUC_DOMAIN")
 	if !ok {
 		fmt.Println("internal muc domain not specified")
 		os.Exit(2)
