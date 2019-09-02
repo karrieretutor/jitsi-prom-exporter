@@ -105,7 +105,7 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 		"The total number of participant-seconds that are loss-degraded.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"bit_rate_download", prometheus.GaugeValue,
-		"download rate bit/s", []string{"jvb_instance"}, constLabels))
+		"download rate kbit/s", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"videostreams", prometheus.GaugeValue,
 		"An estimation of the number of current video streams forwarded by the bridge.", []string{"jvb_instance"}, constLabels))
@@ -204,7 +204,7 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 		"The total number of partially failed conferences on the bridge. A conference is marked as partially failed when some of its channels has failed. A channel is marked as failed if it had no payload activity.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"bit_rate_upload", prometheus.GaugeValue,
-		"Current upload rate in bit/s.", []string{"jvb_instance"}, constLabels))
+		"Current upload rate in kbit/s.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_conferences_completed", prometheus.CounterValue,
 		"Total conferences completed.", []string{"jvb_instance"}, constLabels))
