@@ -2,7 +2,7 @@
 Exporter that grabs various metrics from [Jitsi](https://jitsi.org), especially form the video bridges, and publishes them as [Prometheus](https://prometheus.io) metrics.
 The basic idea is to enter the jvbbrewery MUC room and listen to the presence broadcasts from the JVBs.
 
-There is a (documentation)[https://github.com/jitsi/jitsi-videobridge/blob/master/doc/statistics.md] of the published statistics by the video bridges.
+There is a [documentation](https://github.com/jitsi/jitsi-videobridge/blob/master/doc/statistics.md) of the published statistics by the video bridges.
 
 # env configuration
 env | description | default value
