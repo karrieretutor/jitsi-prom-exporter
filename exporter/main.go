@@ -21,6 +21,7 @@ import (
 	"crypto/tls"
 	"encoding/xml"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -52,6 +53,8 @@ var (
 		timeout:   5 * time.Second,
 		connected: false,
 	}
+
+	serverChecker *xmpp.ServerCheck
 
 	jvbbrewery string
 	cm         *xmpp.StreamManager
@@ -120,6 +123,20 @@ func main() {
 		fmt.Println("internal muc domain not specified")
 		os.Exit(2)
 	}
+
+	//we need a serverchecker
+	go func() {
+		address := xmppServer + ":" + xmppPort
+		for true {
+			_, err := net.DialTimeout("tcp", address, 5*time.Second)
+			if err != nil {
+				fmt.Printf("Could not connect to server %s: %s\nexiting\n", address, err.Error())
+				signals <- iExit
+			}
+			time.Sleep(10 * time.Second)
+		}
+	}()
+
 	jvbbrewery = breweryroom + "@" + internalMucDomain
 
 	jid := xmppUser + "@" + xmppAuthDomain
@@ -169,7 +186,8 @@ func main() {
 }
 
 func shutdown() {
-	if cm != nil {
+	//we get a segfault if connection actually never happened
+	if cm != nil && cm.Metrics.ConnectTime != 0*time.Second {
 		cm.Stop()
 	}
 }
@@ -251,5 +269,11 @@ func connectClient(c xmpp.Config, r *xmpp.Router) {
 	if err != nil {
 		fmt.Printf("xmpp connection manager returned with error: %s\n", err.Error())
 		signals <- iFail
+		return
 	}
+
+	//connection closed we are done
+	fmt.Println("XMPP connection closed, exiting.")
+	signals <- iExit
+	return
 }
