@@ -4,6 +4,15 @@ The basic idea is to enter the jvbbrewery MUC room and listen to the presence br
 
 There is a [documentation](https://github.com/jitsi/jitsi-videobridge/blob/master/doc/statistics.md) of the published statistics by the video bridges.
 
+# Run
+There are multiple ways to run the exporter. Once it is running, it will publish the collected metrics on `:8080/metrics`.
+
+## Binary
+Clone this repo into your `$GOPATH/src/` directory. In the exporter directroy run `go get ./...` which creates the `exporter` binary in `$GOPTAH/bin/`. You can run this binary, it will still pull its configuration (see below) from the environment.
+
+## Docker container
+There is an image available on [docker hub](https://hub.docker.com/r/karrieretutor/jitsi) `karrieretutor/jitsi:prom-exporter-latest`. Alternatively build it yourself with the provided dockerfile. The configuration is provided via environment (see below). By running it as a docker container you gain the advantage of choosing the port which is used for publishing the metrics, see [docker cli reference](https://docs.docker.com/engine/reference/commandline/run/#publish-or-expose-port--p---expose).
+
 # env configuration
 env | description | default value
 --- | --- | ---
