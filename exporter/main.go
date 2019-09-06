@@ -128,10 +128,15 @@ func main() {
 	go func() {
 		address := xmppServer + ":" + xmppPort
 		for true {
-			_, err := net.DialTimeout("tcp", address, 5*time.Second)
+			conn, err := net.DialTimeout("tcp", address, 5*time.Second)
 			if err != nil {
 				fmt.Printf("Could not connect to server %s: %s\nexiting\n", address, err.Error())
 				signals <- iExit
+				return
+			}
+
+			if tcpconn, ok := conn.(*net.TCPConn); ok {
+				_ = tcpconn.Close()
 			}
 			time.Sleep(10 * time.Second)
 		}
