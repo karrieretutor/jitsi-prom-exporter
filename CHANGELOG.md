@@ -1,5 +1,7 @@
 # Changelog
 ## Unreleased
+### Added 
+- implemented fixed version of xmpp library, [thanks](https://github.com/FluuxIO/go-xmpp/issues/107)
 
 ## [0.0.3] 2019-09-06
 ### Added

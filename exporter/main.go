@@ -33,8 +33,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	xmpp "github.com/FluuxIO/go-xmpp"
 	uuid "github.com/satori/go.uuid"
-	xmpp "gosrc.io/xmpp"
 	stanza "gosrc.io/xmpp/stanza"
 )
 
@@ -192,7 +192,7 @@ func main() {
 
 func shutdown() {
 	//we get a segfault if connection actually never happened
-	if cm != nil && cm.Metrics.ConnectTime != 0*time.Second {
+	if cm != nil {
 		cm.Stop()
 	}
 }
