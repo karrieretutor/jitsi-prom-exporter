@@ -7,6 +7,12 @@ There is a [documentation](https://github.com/jitsi/jitsi-videobridge/blob/maste
 # Run
 There are multiple ways to run the exporter. Once it is running, it will publish the collected metrics on `:8080/metrics`.
 
+## Register user in prosody
+You will have to create a XMPP user in Prosody, do this with:
+```bash
+prosodyctl --config <abs path to jitsi-meet.cfg.lua> register <user> <auth-domain> <password>
+```
+
 ## Binary
 Clone this repo into your `$GOPATH/src/` directory. In the exporter directroy run `go get ./...` which creates the `exporter` binary in `$GOPTAH/bin/`. You can run this binary, it will still pull its configuration (see below) from the environment.
 
@@ -28,9 +34,5 @@ env | description | default value
 
 `XMPP_USER` and `XMPP_AUTH_DOMAIN` are used to construct the JID `XMPP_USER@XMPP_AUTH_DOMAIN`
 
-# Register user in prosody
-You will have to create a XMPP user in Prosody, do this with:
-```bash
-prosodyctl --config <abs path to jitsi-meet.cfg.lua> register <user> <auth-domain> <password>
-```
+
 
