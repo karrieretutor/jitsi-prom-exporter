@@ -96,7 +96,7 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 		"number of open tcp connections", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conference_sizes", prometheus.UntypedValue,
-		"total number of packets sent", []string{"jvb_instance"}, constLabels))
+		"histogram of conference sizes (ie. how many conferences have 5 participants and so on)", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_sent_octo", prometheus.CounterValue,
 		"total number of octo packets sent", []string{"jvb_instance"}, constLabels))
@@ -243,39 +243,8 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 
 						//special case for conference_sizes
 						if metric.name == c.NamePrefix+"conference_sizes" {
-							var sizes = make(map[float64]uint64)
-							value := strings.Trim(stat.Value, "[]")
-							var values []uint64
-							for _, v := range strings.Split(value, ",") {
-								vuint, _ := strconv.ParseUint(v, 10, 64)
-								values = append(values, vuint)
-							}
-
-							//calculate sum (makes this metric independent from conferences metric)
-							var sum uint64
-							for _, v := range values {
-								sum += v
-							}
-
-							//for the histgram buckets we need to omit the last field b/c the +inf bucket is added automatically
-							values = values[:len(values)-1]
-
-							//the bucket values have to be cumulative
-							var i int
-							for i = len(values) - 1; i >= 0; i-- {
-								var cumulative uint64
-								var j int
-								for j = i; j >= 0; j-- {
-									cumulative += values[j]
-								}
-								values[i] = cumulative
-							}
-
-							for i, v := range values {
-								sizes[float64(i)] = v
-							}
-
-							m, err := prometheus.NewConstHistogram(metric.desc, sum, float64(sum), sizes, set.jvbIdentifier)
+							conSizes, sum := conferenceSizesHelper(stat.Value)
+							m, err := prometheus.NewConstHistogram(metric.desc, sum, float64(sum), conSizes, set.jvbIdentifier)
 
 							if err != nil {
 								fmt.Printf("Unable to publish metric %s: %s\n", metric.name, err.Error())
@@ -304,6 +273,33 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 		}
 	}
 
+	//conference_sizes_combined, a new metric where we sum up all valid conference sizes histograms
+	var combinedConferenceSizes = make(map[float64]uint64)
+	var combinedSum uint64
+	for _, s := range c.statsSets {
+		if time.Since(s.lastUpdated) <= c.Retention {
+			for _, stat := range s.stats.Stats {
+				if stat.Name == "conference_sizes" {
+					conSizes, sum := conferenceSizesHelper(stat.Value)
+					for bucket, numConferences := range conSizes {
+						combinedConferenceSizes[bucket] += numConferences
+					}
+					combinedSum += sum
+				}
+			}
+		}
+	}
+
+	metric := newMetric("conference_sizes_combined", prometheus.UntypedValue,
+		"All active conference_sizes summed up into this histogram, see conference_sizes", []string{}, prometheus.Labels{})
+	m, err := prometheus.NewConstHistogram(metric.desc, combinedSum, float64(combinedSum), combinedConferenceSizes)
+
+	if err != nil {
+		fmt.Printf("Unable to create %s metric: %s\n", metric.name, err.Error())
+	} else {
+		metrics <- m
+	}
+
 }
 
 //Update updates the cached stats for the JVB identified by identifier, inserts a new stats set if none present yet.
@@ -324,4 +320,40 @@ func (c *JvbCollector) Update(identifier string, stats *Stats) {
 		stats:         *stats,
 		jvbIdentifier: identifier,
 	})
+}
+
+func conferenceSizesHelper(conferenceSizes string) (conferenceSizesHistogram map[float64]uint64, sum uint64) {
+	var sizes = make(map[float64]uint64)
+	value := strings.Trim(conferenceSizes, "[]")
+	var values []uint64
+	for _, v := range strings.Split(value, ",") {
+		vuint, _ := strconv.ParseUint(v, 10, 64)
+		values = append(values, vuint)
+	}
+
+	//calculate sum (makes this metric independent from conferences metric)
+	sum = 0
+	for _, v := range values {
+		sum += v
+	}
+
+	//for the histgram buckets we need to omit the last field b/c the +inf bucket is added automatically
+	values = values[:len(values)-1]
+
+	//the bucket values have to be cumulative
+	var i int
+	for i = len(values) - 1; i >= 0; i-- {
+		var cumulative uint64
+		var j int
+		for j = i; j >= 0; j-- {
+			cumulative += values[j]
+		}
+		values[i] = cumulative
+	}
+
+	for i, v := range values {
+		sizes[float64(i)] = v
+	}
+
+	return sizes, sum
 }

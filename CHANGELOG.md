@@ -1,7 +1,10 @@
 # Changelog
 ## Unreleased
+
+## [0.0.4]
 ### Added 
 - implemented fixed version of xmpp library, [thanks](https://github.com/FluuxIO/go-xmpp/issues/107)
+- added new metric `conference_sizes_combined` which sums up all active con_sizes histograms into a single histobgram
 
 ## [0.0.3] 2019-09-06
 ### Added
