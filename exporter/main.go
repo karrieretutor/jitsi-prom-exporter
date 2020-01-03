@@ -84,13 +84,13 @@ func main() {
 	}()
 
 	//read credentials and stuff from environment
-	xmppUser, ok := os.LookupEnv("PROMEXP_XMPP_USER")
+	xmppUser, ok := os.LookupEnv("PROMEXP_AUTH_USER")
 	if !ok {
 		fmt.Println("No user specified, failing")
 		os.Exit(2)
 	}
 
-	xmppPw, ok := os.LookupEnv("PROMEXP_XMPP_PASSWORD")
+	xmppPw, ok := os.LookupEnv("PROMEXP_AUTH_PASSWORD")
 	if !ok {
 		fmt.Println("No password specified, failing")
 		os.Exit(2)
