@@ -149,6 +149,7 @@ func main() {
 	config := xmpp.Config{
 		TransportConfiguration: xmpp.TransportConfiguration{
 			Address:      address,
+			Domain:       xmppAuthDomain,
 			TLSConfig:    &tls.Config{InsecureSkipVerify: true},
 		},
 		Jid:          jid,
