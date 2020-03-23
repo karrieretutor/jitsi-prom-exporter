@@ -84,13 +84,13 @@ func main() {
 	}()
 
 	//read credentials and stuff from environment
-	xmppUser, ok := os.LookupEnv("XMPP_USER")
+	xmppUser, ok := os.LookupEnv("PROMEXP_AUTH_USER")
 	if !ok {
 		fmt.Println("No user specified, failing")
 		os.Exit(2)
 	}
 
-	xmppPw, ok := os.LookupEnv("XMPP_PW")
+	xmppPw, ok := os.LookupEnv("PROMEXP_AUTH_PASSWORD")
 	if !ok {
 		fmt.Println("No password specified, failing")
 		os.Exit(2)
@@ -147,12 +147,15 @@ func main() {
 	jid := xmppUser + "@" + xmppAuthDomain
 	address := xmppServer + ":" + xmppPort
 	config := xmpp.Config{
-		Address:      address,
+		TransportConfiguration: xmpp.TransportConfiguration{
+			Address:      address,
+			Domain:       xmppAuthDomain,
+			TLSConfig:    &tls.Config{InsecureSkipVerify: true},
+		},
 		Jid:          jid,
-		Password:     xmppPw,
+		Credential:   xmpp.Password(xmppPw),
 		StreamLogger: os.Stdout,
 		Insecure:     true,
-		TLSConfig:    &tls.Config{InsecureSkipVerify: true},
 	}
 
 	router := xmpp.NewRouter()
@@ -261,10 +264,9 @@ func postConnect(s xmpp.Sender) {
 }
 
 func connectClient(c xmpp.Config, r *xmpp.Router) {
-	client, err := xmpp.NewClient(c, r)
+	client, err := xmpp.NewClient(&c, r, errorHandler)
 	if err != nil {
 		fmt.Printf("unable to create client: %s\n", err.Error())
-		signals <- iFail
 	}
 
 	fmt.Println("starting streammanger")
@@ -281,4 +283,9 @@ func connectClient(c xmpp.Config, r *xmpp.Router) {
 	fmt.Println("XMPP connection closed, exiting.")
 	signals <- iExit
 	return
+}
+
+// If an error occurs, this is used to kill the client
+func errorHandler(err error) {
+	signals <- iFail
 }
