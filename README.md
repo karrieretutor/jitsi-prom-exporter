@@ -41,6 +41,7 @@ env | description | default value
 `JVB_BREWERY_MUC` | name of jvbbrewery MUC room to join; it will join with `prom-exporter` as nickname -> `JVB_BREWERY_MUC@INTERNAL_MUC_DOMAIN/prom-exporter` | jvbbrewery
 `JVB_METRIC_SUBSYSTEM` | Allows you to customize the metric names: `[<subsystem>_][<namespace>_]metricname`; both are optional |
 `JVB_METRIC_NAMESPACE` | see `JVB_METRIC_SUBSYSTEM` | 
+`JVB_METRIC_LABELS` | Allows to set additional custom metrics labels, values are written as key pairs separated with comma, ie key1=value1,key2=value2 | app=jitsi
 
 `PROMEXP_AUTH_USER` and `XMPP_AUTH_DOMAIN` are used to construct the JID `PROMEXP_AUTH_USER@XMPP_AUTH_DOMAIN`
 
