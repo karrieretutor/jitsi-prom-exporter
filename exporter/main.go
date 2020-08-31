@@ -59,7 +59,7 @@ var (
 	jvbbrewery string
 	cm         *xmpp.StreamManager
 
-	jvbCollector = NewJvbCollector(os.Getenv("JVB_METRIC_NAMESPACE"), os.Getenv("JVB_METRIC_SUBSYSTEM"), 30*time.Second)
+	jvbCollector = NewJvbCollector(os.Getenv("JVB_METRIC_NAMESPACE"), os.Getenv("JVB_METRIC_SUBSYSTEM"), os.Getenv("JVB_METRIC_LABELS"), 30*time.Second)
 )
 
 func init() {
@@ -148,14 +148,14 @@ func main() {
 	address := xmppServer + ":" + xmppPort
 	config := xmpp.Config{
 		TransportConfiguration: xmpp.TransportConfiguration{
-			Address:      address,
-			Domain:       xmppAuthDomain,
-			TLSConfig:    &tls.Config{InsecureSkipVerify: true},
+			Address:   address,
+			Domain:    xmppAuthDomain,
+			TLSConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 		Jid:          jid,
 		Credential:   xmpp.Password(xmppPw),
 		StreamLogger: os.Stdout,
-		Insecure:     true,
+		Insecure:     false,
 	}
 
 	router := xmpp.NewRouter()

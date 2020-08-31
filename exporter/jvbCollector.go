@@ -66,7 +66,7 @@ type JvbCollector struct {
 
 //NewJvbCollector initializes a Jvb collector
 //namespace and subsystem may be empty if you dont need them, see https://godoc.org/github.com/prometheus/client_golang/prometheus#Opts
-func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbCollector {
+func NewJvbCollector(namespace, subsystem, labels string, retention time.Duration) *JvbCollector {
 	var collector = &JvbCollector{
 		Retention: retention,
 	}
@@ -86,6 +86,14 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 
 	var constLabels = prometheus.Labels{
 		"app": "jitsi",
+	}
+
+	if labels != "" {
+		s := strings.Split(labels, ",")
+		for _, v := range s {
+			d := strings.Split(v, "=")
+			constLabels[d[0]] = d[1]
+		}
 	}
 
 	//add metrics
