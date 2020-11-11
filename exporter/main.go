@@ -33,8 +33,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	xmpp "github.com/FluuxIO/go-xmpp"
 	uuid "github.com/satori/go.uuid"
+	xmpp "gosrc.io/xmpp"
 	stanza "gosrc.io/xmpp/stanza"
 )
 
@@ -242,7 +242,7 @@ func postConnect(s xmpp.Sender) {
 		signals <- iFail
 	}
 
-	uuid, _ := uuid.NewV4()
+	uuid := uuid.NewV4()
 	id := uuid.String()
 
 	//join jvbbrewery room
