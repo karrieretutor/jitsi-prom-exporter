@@ -110,9 +110,6 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"jitter_aggregate", prometheus.GaugeValue,
 		"Experimental. An average value (in milliseconds) of the jitter calculated for incoming and outgoing streams. This hasn't been tested and it is currently not known whether the values are correct or not.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_channels", prometheus.GaugeValue,
-		"Current number of channels", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_memory", prometheus.GaugeValue,
 		"The total memory of the machine in megabytes.", []string{"jvb_instance"}, constLabels))
 
@@ -167,9 +164,6 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_udp_connections", prometheus.GaugeValue,
 		"The current number of udp connections.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"loss_rate_upload", prometheus.GaugeValue,
-		"The fraction of lost outgoing RTP packets. This is based on incoming RTCP Receiver Reports, and an attempt to subtract the fraction of packets that were not sent (i.e. were lost before they reached the bridge). Further, this is averaged over all streams of all users as opposed to all packets, so it is not correctly weighted. This is not accurate, but may be a useful metric nonetheless.", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_received_octo", prometheus.CounterValue,
 		"Total octo packets received.", []string{"jvb_instance"}, constLabels))
 
@@ -182,17 +176,11 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_data_channel_messages_received", prometheus.CounterValue,
 		"Total data channel messages received.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"loss_rate_download", prometheus.GaugeValue,
-		"The fraction of lost incoming RTP packets. This is based on RTP sequence numbers and is relatively accurate.", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_conference_seconds", prometheus.CounterValue,
 		"The sum of the lengths of all completed conferences, in seconds.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_bytes_received", prometheus.CounterValue,
 		"Total bytes received.", []string{"jvb_instance"}, constLabels))
-
-	// collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"rtp_loss", prometheus.CounterValue,
-	// 	"Deprecated. The sum of loss_rate_download and loss_rate_upload.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_loss_controlled_participant_seconds", prometheus.CounterValue,
 		"The total number of participant-seconds that are loss-controlled.", []string{"jvb_instance"}, constLabels))
@@ -233,6 +221,18 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"inactive_conferences", prometheus.GaugeValue,
 		"The current number of inactive_conferences conferences", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"receive_only_endpoints", prometheus.GaugeValue,
+		"The current number of inactive_conferences conferences", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"incoming_loss", prometheus.CounterValue,
+		"incoming_loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"outgoing_loss", prometheus.CounterValue,
+		"incoming_loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"overall_loss", prometheus.CounterValue,
+		"incoming_loss", []string{"jvb_instance"}, constLabels))
 
 	return collector
 }
