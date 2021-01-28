@@ -1,0 +1,76 @@
+<presence id='Ff4DZ-54127' to='jvb@auth.sessions.landr.com/OauD-iYs'
+          from='jvbbrewery@internal-muc.sessions.landr.com/ip-172-31-74-204.ec2.internal'>
+    <stats xmlns='http://jitsi.org/protocol/colibri'>
+        <stat name='inactive_endpoints' value='0'/>
+        <stat name='inactive_conferences' value='0'/>
+        <stat name='total_ice_succeeded_relayed' value='0'/>
+        <stat name='total_loss_degraded_participant_seconds' value='105'/>
+        <stat name='bit_rate_download' value='5163.32'/>
+        <stat name='muc_clients_connected' value='1'/>
+        <stat name='total_participants' value='164'/>
+        <stat name='total_packets_received' value='39929677'/>
+        <stat name='rtt_aggregate' value='98.37792999999999'/>
+        <stat name='packet_rate_upload' value='555'/>
+        <stat name='p2p_conferences' value='0'/>
+        <stat name='total_loss_limited_participant_seconds' value='447'/>
+        <stat name='octo_send_bitrate' value='0'/>
+        <stat name='total_dominant_speaker_changes' value='4459'/>
+        <stat name='receive_only_endpoints' value='2'/>
+        <stat name='total_colibri_web_socket_messages_received' value='193863'/>
+        <stat name='octo_receive_bitrate' value='0'/>
+        <stat name='version' value='2.1.376-g9f12bfe2'/>
+        <stat name='total_ice_succeeded' value='141'/>
+        <stat name='total_colibri_web_socket_messages_sent' value='259237'/>
+        <stat name='total_bytes_sent_octo' value='0'/>
+        <stat name='total_data_channel_messages_received' value='0'/>
+        <stat name='total_conference_seconds' value='119884'/>
+        <stat name='bit_rate_upload' value='3099.51'/>
+        <stat name='total_conferences_completed' value='46'/>
+        <stat name='octo_conferences' value='0'/>
+        <stat name='num_eps_no_msg_transport_after_delay' value='2'/>
+        <stat name='endpoints_sending_video' value='3'/>
+        <stat name='packet_rate_download' value='784'/>
+        <stat name='muc_clients_configured' value='1'/>
+        <stat name='outgoing_loss' value='0.008760371781631708'/>
+        <stat name='overall_loss' value='0.006016335928078062'/>
+        <stat name='conference_sizes' value='[0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'/>
+        <stat name='total_packets_sent_octo' value='0'/>
+        <stat name='conferences_by_video_senders' value='[0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'/>
+        <stat name='stress_level' value='0.02706'/>
+        <stat name='jitter_aggregate' value='16.372126467229386'/>
+        <stat name='total_ice_succeeded_tcp' value='0'/>
+        <stat name='octo_endpoints' value='0'/>
+        <stat name='current_timestamp' value='2021-01-28 14:15:02.227'/>
+        <stat name='total_packets_dropped_octo' value='0'/>
+        <stat name='conferences' value='2'/>
+        <stat name='participants' value='5'/>
+        <stat name='largest_conference' value='3'/>
+        <stat name='total_packets_sent' value='53469129'/>
+        <stat name='total_data_channel_messages_sent' value='0'/>
+        <stat name='incoming_loss' value='0.004299685877871099'/>
+        <stat name='total_bytes_received_octo' value='0'/>
+        <stat name='octo_send_packet_rate' value='0'/>
+        <stat name='conferences_by_audio_senders' value='[1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'/>
+        <stat name='total_conferences_created' value='48'/>
+        <stat name='total_ice_failed' value='15'/>
+        <stat name='threads' value='84'/>
+        <stat name='videochannels' value='5'/>
+        <stat name='total_packets_received_octo' value='0'/>
+        <stat name='graceful_shutdown' value='false'/>
+        <stat name='octo_receive_packet_rate' value='0'/>
+        <stat name='total_bytes_received' value='31724719527'/>
+        <stat name='total_loss_controlled_participant_seconds' value='163069'/>
+        <stat name='total_partially_failed_conferences' value='1'/>
+        <stat name='endpoints_sending_audio' value='1'/>
+        <stat name='dtls_failed_endpoints' value='0'/>
+        <stat name='total_bytes_sent' value='43057244154'/>
+        <stat name='mucs_configured' value='1'/>
+        <stat name='total_failed_conferences' value='0'/>
+        <stat name='mucs_joined' value='1'/>
+    </stats>
+    <c ver='J9NX/W60zM1qU212l2dK0guuKsI=' node='http://www.igniterealtime.org/projects/smack'
+       xmlns='http://jabber.org/protocol/caps' hash='sha-1'/>
+    <x xmlns='http://jabber.org/protocol/muc#user'>
+        <item affiliation='owner' jid='jvb@auth.sessions.landr.com/hkMAuh7G' role='moderator'/>
+    </x>
+</presence>

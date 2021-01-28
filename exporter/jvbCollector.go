@@ -107,9 +107,6 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"bit_rate_download", prometheus.GaugeValue,
 		"download rate kbit/s", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"videostreams", prometheus.GaugeValue,
-		"An estimation of the number of current video streams forwarded by the bridge.", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"jitter_aggregate", prometheus.GaugeValue,
 		"Experimental. An average value (in milliseconds) of the jitter calculated for incoming and outgoing streams. This hasn't been tested and it is currently not known whether the values are correct or not.", []string{"jvb_instance"}, constLabels))
 
@@ -220,6 +217,22 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"audiochannels", prometheus.GaugeValue,
 		"The current number of audiochannels on the bridge.", []string{"jvb_instance"}, constLabels))
+
+	// new
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_sending_video", prometheus.GaugeValue,
+		"The current number of endpoints sending video", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_sending_audio", prometheus.GaugeValue,
+		"The current number of endpoints sending audio", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"stress_level", prometheus.GaugeValue,
+		"The current video bridge stress level", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"p2p_conferences", prometheus.GaugeValue,
+		"The current number of p2p conferences", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"inactive_conferences", prometheus.GaugeValue,
+		"The current number of inactive_conferences conferences", []string{"jvb_instance"}, constLabels))
 
 	return collector
 }
