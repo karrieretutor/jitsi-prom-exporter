@@ -162,7 +162,7 @@ func main() {
 	router.HandleFunc("iq", handleIq)
 	router.HandleFunc("presence", handlePresence)
 
-	go connectClient(config, router)
+	go connectClient(&config, router)
 
 	//start the watchdog
 	go watchdog.watchConnection(signals)
