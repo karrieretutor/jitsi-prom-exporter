@@ -1,4 +1,4 @@
-FROM golang:alpine AS golang
+FROM golang:1.15-alpine AS golang
 RUN apk update && apk add git
 RUN echo "goroot: $GOROOT"
 ADD ./exporter /go/src/exporter
