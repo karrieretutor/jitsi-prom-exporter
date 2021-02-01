@@ -234,6 +234,12 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"overall_loss", prometheus.CounterValue,
 		"incoming_loss", []string{"jvb_instance"}, constLabels))
 
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_conferences_created", prometheus.GaugeValue,
+		"The total number of created conferences.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_participants", prometheus.GaugeValue,
+		"The total number of participants.", []string{"jvb_instance"}, constLabels))
+
 	return collector
 }
 
