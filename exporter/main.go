@@ -170,7 +170,7 @@ func main() {
 	//start serving prom metrics
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(":9185", nil)
 		if err != nil {
 			fmt.Printf("Unable to serve prom metrics: %s\n", err.Error())
 			signals <- iFail
