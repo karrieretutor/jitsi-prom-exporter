@@ -147,12 +147,14 @@ func main() {
 	jid := xmppUser + "@" + xmppAuthDomain
 	address := xmppServer + ":" + xmppPort
 	config := xmpp.Config{
-		Address:      address,
+		TransportConfiguration: xmpp.TransportConfiguration{
+			Address:   address,
+			TLSConfig: &tls.Config{InsecureSkipVerify: true},
+		},
 		Jid:          jid,
-		Password:     xmppPw,
+		Credential:   xmpp.Password(xmppPw),
 		StreamLogger: os.Stdout,
 		Insecure:     true,
-		TLSConfig:    &tls.Config{InsecureSkipVerify: true},
 	}
 
 	router := xmpp.NewRouter()
@@ -168,7 +170,7 @@ func main() {
 	//start serving prom metrics
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(":9185", nil)
 		if err != nil {
 			fmt.Printf("Unable to serve prom metrics: %s\n", err.Error())
 			signals <- iFail
@@ -213,7 +215,7 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 	}
 
 	if presence.Get(&Stats{}) && presence.Get(&User{}) {
-		var jvbJid string
+		// var jvbJid string
 		var stats *Stats
 
 		//check extensions
@@ -221,15 +223,17 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 			switch extension := e.(type) {
 			case *Stats:
 				stats = extension
-			case *User:
-				for _, i := range extension.Items {
-					jvbJid = i.Jid
-				}
+				// case *User:
+				// 	for _, i := range extension.Items {
+				// 		jvbJid = i.Jid
+				// 	}
+				// }
 			}
 		}
 
 		//we want to keep track of jvbs across their reconnects of autoscaled sets
-		jvbCollector.Update(strings.Split(jvbJid, "@")[0], stats)
+		// jvbCollector.Update(strings.Split(jvbJid, "@")[0], stats)
+		jvbCollector.Update(strings.Split(presence.From, "/")[1], stats)
 	}
 }
 
@@ -261,7 +265,7 @@ func postConnect(s xmpp.Sender) {
 }
 
 func connectClient(c xmpp.Config, r *xmpp.Router) {
-	client, err := xmpp.NewClient(c, r)
+	client, err := xmpp.NewClient(&c, r, errorHandler)
 	if err != nil {
 		fmt.Printf("unable to create client: %s\n", err.Error())
 		signals <- iFail
@@ -281,4 +285,8 @@ func connectClient(c xmpp.Config, r *xmpp.Router) {
 	fmt.Println("XMPP connection closed, exiting.")
 	signals <- iExit
 	return
+}
+
+func errorHandler(err error) {
+	fmt.Println(err.Error())
 }
