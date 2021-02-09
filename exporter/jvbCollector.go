@@ -100,9 +100,6 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"packet_rate_download", prometheus.GaugeValue,
 		"download packet rate", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_tcp_connections", prometheus.GaugeValue,
-		"number of open tcp connections", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conference_sizes", prometheus.UntypedValue,
 		"histogram of conference sizes (ie. how many conferences have 5 participants and so on)", []string{"jvb_instance"}, constLabels))
 
@@ -115,17 +112,8 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"bit_rate_download", prometheus.GaugeValue,
 		"download rate kbit/s", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"videostreams", prometheus.GaugeValue,
-		"An estimation of the number of current video streams forwarded by the bridge.", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"jitter_aggregate", prometheus.GaugeValue,
 		"Experimental. An average value (in milliseconds) of the jitter calculated for incoming and outgoing streams. This hasn't been tested and it is currently not known whether the values are correct or not.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_channels", prometheus.GaugeValue,
-		"Current number of channels", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_memory", prometheus.GaugeValue,
-		"The total memory of the machine in megabytes.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_received", prometheus.CounterValue,
 		"Total number of packets received", []string{"jvb_instance"}, constLabels))
@@ -157,15 +145,6 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_bytes_received_octo", prometheus.CounterValue,
 		"The total number octo bytes sent.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_no_transport_channels", prometheus.GaugeValue,
-		"The current number of transport channels.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_no_payload_channels", prometheus.GaugeValue,
-		"The current number of payload channels.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"used_memory", prometheus.GaugeValue,
-		"Total used memory on the machine (i.e. what 'free' would return) in megabytes (10^6 B).", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"threads", prometheus.GaugeValue,
 		"The current number of threads.", []string{"jvb_instance"}, constLabels))
 
@@ -174,12 +153,6 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"videochannels", prometheus.GaugeValue,
 		"The current number of videochannels.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_udp_connections", prometheus.GaugeValue,
-		"The current number of udp connections.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"loss_rate_upload", prometheus.GaugeValue,
-		"The fraction of lost outgoing RTP packets. This is based on incoming RTCP Receiver Reports, and an attempt to subtract the fraction of packets that were not sent (i.e. were lost before they reached the bridge). Further, this is averaged over all streams of all users as opposed to all packets, so it is not correctly weighted. This is not accurate, but may be a useful metric nonetheless.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_received_octo", prometheus.CounterValue,
 		"Total octo packets received.", []string{"jvb_instance"}, constLabels))
