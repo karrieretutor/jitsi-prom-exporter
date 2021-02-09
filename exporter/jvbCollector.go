@@ -136,9 +136,6 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_failed", prometheus.CounterValue,
 		"total ice failed", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"region", prometheus.UntypedValue,
-		"region", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"num_eps_no_msg_transport_after_delay", prometheus.GaugeValue,
 		"num endpoints no message transport after delay", []string{"jvb_instance"}, constLabels))
 
@@ -310,8 +307,8 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 
 						//special case for conference_sizes
 						if (metric.name == c.NamePrefix+"conference_sizes") ||
-						   (metric.name == c.NamePrefix+"conferences_by_video_senders") ||
-						   (metric.name == c.NamePrefix+"conferences_by_audio_senders") {
+							(metric.name == c.NamePrefix+"conferences_by_video_senders") ||
+							(metric.name == c.NamePrefix+"conferences_by_audio_senders") {
 							conSizes, sum := conferenceSizesHelper(stat.Value)
 							m, err := prometheus.NewConstHistogram(metric.desc, sum, float64(sum), conSizes, set.jvbIdentifier)
 
