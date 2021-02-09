@@ -309,7 +309,9 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 					if metric.name == c.NamePrefix+stat.Name {
 
 						//special case for conference_sizes
-						if metric.name == c.NamePrefix+"conference_sizes" {
+						if (metric.name == c.NamePrefix+"conference_sizes") ||
+						   (metric.name == c.NamePrefix+"conferences_by_video_senders") ||
+						   (metric.name == c.NamePrefix+"conferences_by_audio_senders") {
 							conSizes, sum := conferenceSizesHelper(stat.Value)
 							m, err := prometheus.NewConstHistogram(metric.desc, sum, float64(sum), conSizes, set.jvbIdentifier)
 
