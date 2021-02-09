@@ -97,6 +97,93 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	}
 
 	//add metrics
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"inactive_endpoints", prometheus.GaugeValue,
+		"inactive endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"inactive_conferences", prometheus.GaugeValue,
+		"inactive conferences", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"muc_clients_connected", prometheus.GaugeValue,
+		"muc clients connected", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"p2p_conferences", prometheus.GaugeValue,
+		"p2p conferences", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_send_bitrate", prometheus.GaugeValue,
+		"octo send bitrate", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_send_packet_rate", prometheus.GaugeValue,
+		"octo send packet rate", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_receive_bitrate", prometheus.GaugeValue,
+		"octo receive bitrate", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_receive_packet_rate", prometheus.GaugeValue,
+		"octo receive packet rate", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_dominant_speaker_changes", prometheus.CounterValue,
+		"total dominant speaker changes", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_succeeded", prometheus.CounterValue,
+		"total ice succeeded", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_succeeded_tcp", prometheus.CounterValue,
+		"total ice succeeded tcp", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_succeeded_relayed", prometheus.CounterValue,
+		"total ice succeeded relayed", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_failed", prometheus.CounterValue,
+		"total ice failed", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"region", prometheus.UntypedValue,
+		"region", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"num_eps_no_msg_transport_after_delay", prometheus.GaugeValue,
+		"num endpoints no message transport after delay", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"mucs_configured", prometheus.GaugeValue,
+		"mucs configured", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"mucs_joined", prometheus.GaugeValue,
+		"mucs joined", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"muc_clients_configured", prometheus.GaugeValue,
+		"muc clients configured", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"incoming_loss", prometheus.GaugeValue,
+		"incoming loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"outgoing_loss", prometheus.GaugeValue,
+		"outgoing loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"overall_loss", prometheus.GaugeValue,
+		"overall loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conferences_by_video_senders", prometheus.UntypedValue,
+		"histogram of conference sizes by number of video senders", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conferences_by_audio_senders", prometheus.UntypedValue,
+		"histogram of conference sizes by number of audio senders", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"stress_level", prometheus.GaugeValue,
+		"stress level", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_endpoints", prometheus.GaugeValue,
+		"octo endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_dropped_octo", prometheus.CounterValue,
+		"total packets dropped octo", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"dtls_failed_endpoints", prometheus.CounterValue,
+		"dtls failed endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"receive_only_endpoints", prometheus.GaugeValue,
+		"receive only endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_conferences", prometheus.GaugeValue,
+		"octo conferences", []string{"jvb_instance"}, constLabels))
+
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"packet_rate_download", prometheus.GaugeValue,
 		"download packet rate", []string{"jvb_instance"}, constLabels))
 
@@ -166,17 +253,11 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_data_channel_messages_received", prometheus.CounterValue,
 		"Total data channel messages received.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"loss_rate_download", prometheus.GaugeValue,
-		"The fraction of lost incoming RTP packets. This is based on RTP sequence numbers and is relatively accurate.", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_conference_seconds", prometheus.CounterValue,
 		"The sum of the lengths of all completed conferences, in seconds.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_bytes_received", prometheus.CounterValue,
 		"Total bytes received.", []string{"jvb_instance"}, constLabels))
-
-	// collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"rtp_loss", prometheus.CounterValue,
-	// 	"Deprecated. The sum of loss_rate_download and loss_rate_upload.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_loss_controlled_participant_seconds", prometheus.CounterValue,
 		"The total number of participant-seconds that are loss-controlled.", []string{"jvb_instance"}, constLabels))
@@ -195,12 +276,6 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_failed_conferences", prometheus.CounterValue,
 		"The total number of failed conferences on the bridge. A conference is marked as failed when all of its channels have failed. A channel is marked as failed if it had no payload activity.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"cpu_usage", prometheus.GaugeValue,
-		"CPU usage for the machine. The value is between 0 and 1 and is the fraction of the last interval that the CPU spent in either user, nice, system or iowait state (what would appear in the 'cpu' line in 'top').", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"audiochannels", prometheus.GaugeValue,
-		"The current number of audiochannels on the bridge.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_sending_audio", prometheus.GaugeValue,
 		"The current number of sending audioendpoint on the bridge.", []string{"jvb_instance"}, constLabels))
