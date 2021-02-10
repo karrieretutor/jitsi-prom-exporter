@@ -83,44 +83,53 @@ func main() {
 		}
 	}()
 
+	// get port on which promexp will listen
+	promexpPort, ok := os.LookupEnv("PROMEXP_PORT")
+	if !ok || promexpPort == "" {
+		fmt.Println("Port not specified, using default port 8080")
+		promexpPort = "8080"
+	}
+
 	//read credentials and stuff from environment
 	xmppUser, ok := os.LookupEnv("PROMEXP_AUTH_USER")
-	if !ok {
+	if !ok || xmppUser == "" {
 		fmt.Println("No user specified, failing")
 		os.Exit(2)
 	}
 
 	xmppPw, ok := os.LookupEnv("PROMEXP_AUTH_PASSWORD")
-	if !ok {
+	if !ok || xmppPw == "" {
 		fmt.Println("No password specified, failing")
 		os.Exit(2)
 	}
 
 	xmppAuthDomain, ok := os.LookupEnv("XMPP_AUTH_DOMAIN")
-	if !ok {
-		fmt.Println("no xmpp auth domain specified")
+	if !ok || xmppAuthDomain == "" {
+		fmt.Println("no xmpp auth domain specified, failing")
 		os.Exit(2)
 	}
 
 	xmppPort, ok := os.LookupEnv("XMPP_PORT")
 	if !ok || xmppPort == "" {
+		fmt.Println("No xmpp port specified, using default port 5222")
 		xmppPort = "5222"
 	}
 
 	xmppServer, ok := os.LookupEnv("XMPP_SERVER")
-	if !ok {
-		fmt.Println("no xmpp server specified")
+	if !ok || xmppServer == "" {
+		fmt.Println("no xmpp server specified, failing")
 		os.Exit(2)
 	}
 
-	breweryroom, ok := os.LookupEnv("JVB_BREWERY_MUC")
-	if !ok || breweryroom == "" {
-		breweryroom = "jvbbrewery"
+	breweryRoom, ok := os.LookupEnv("JVB_BREWERY_MUC")
+	if !ok || breweryRoom == "" {
+		fmt.Println("No xmpp jvb brewery muc specified, using default 'jvbbrewery'")
+		breweryRoom = "jvbbrewery"
 	}
 
 	internalMucDomain, ok := os.LookupEnv("XMPP_INTERNAL_MUC_DOMAIN")
-	if !ok {
-		fmt.Println("internal muc domain not specified")
+	if !ok || internalMucDomain == "" {
+		fmt.Println("internal muc domain not specified, failing")
 		os.Exit(2)
 	}
 
@@ -142,7 +151,7 @@ func main() {
 		}
 	}()
 
-	jvbbrewery = breweryroom + "@" + internalMucDomain
+	jvbbrewery = breweryRoom + "@" + internalMucDomain
 
 	jid := xmppUser + "@" + xmppAuthDomain
 	address := xmppServer + ":" + xmppPort
@@ -171,7 +180,7 @@ func main() {
 	//start serving prom metrics
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(":"+promexpPort, nil)
 		if err != nil {
 			fmt.Printf("Unable to serve prom metrics: %s\n", err.Error())
 			signals <- iFail
