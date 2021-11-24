@@ -109,6 +109,9 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"p2p_conferences", prometheus.GaugeValue,
 		"p2p conferences", []string{"jvb_instance"}, constLabels))
 
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_aimd_bwe_expirations", prometheus.GaugeValue,
+		"total aimd bwe expirations", []string{"jvb_instance"}, constLabels))
+
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_send_bitrate", prometheus.GaugeValue,
 		"octo send bitrate", []string{"jvb_instance"}, constLabels))
 
@@ -166,6 +169,9 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"stress_level", prometheus.GaugeValue,
 		"stress level", []string{"jvb_instance"}, constLabels))
 
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"average_participant_stress", prometheus.GaugeValue,
+		"average participant stress", []string{"jvb_instance"}, constLabels))
+
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_endpoints", prometheus.GaugeValue,
 		"octo endpoints", []string{"jvb_instance"}, constLabels))
 
@@ -186,6 +192,15 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_with_high_outgoing_loss", prometheus.GaugeValue,
 		"number of endpoints with high outgoing loss (more than 10% loss in the bridge->endpoint direction)", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_with_spurious_remb", prometheus.GaugeValue,
+		"endpoints with spurious remb", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints", prometheus.GaugeValue,
+		"endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"local_endpoints", prometheus.GaugeValue,
+		"local endpoints", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"local_active_endpoints", prometheus.GaugeValue,
 		"local active endpoints", []string{"jvb_instance"}, constLabels))
@@ -225,6 +240,12 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_loss_limited_participant_seconds", prometheus.CounterValue,
 		"The total number of participant-seconds that are loss-limited.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"preemptive_kfr_sent", prometheus.GaugeValue,
+		"preemptive kfr sent", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"preemptive_kfr_suppressed", prometheus.GaugeValue,
+		"preemptive kfr suppressed", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"largest_conference", prometheus.GaugeValue,
 		"The current number of participants in the largest conference", []string{"jvb_instance"}, constLabels))
