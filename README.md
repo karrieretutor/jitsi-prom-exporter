@@ -1,7 +1,7 @@
 # Jitsi Prometheus exporter
 Exporter that grabs various metrics from [Jitsi](https://jitsi.org), especially form the video bridges, and publishes them as [Prometheus](https://prometheus.io) metrics.
 The basic idea is to enter the jvbbrewery MUC room and listen to the presence broadcasts from the JVBs.
-Metrics are available for jvb2 version 2.1-416-g2f43d1b4-1 from 12-Jan-2021.
+Metrics are available for jvb2 version 2.1-607-g153f7e4e-1 from 17-Jan-2022.
 
 There is a [documentation](https://github.com/jitsi/jitsi-videobridge/blob/master/doc/statistics.md) of the published statistics by the video bridges, but is not much updated and list of availabled metrics is outdated. To get current metrics query running exporter or look in code.
 

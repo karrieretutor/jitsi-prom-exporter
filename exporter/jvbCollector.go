@@ -315,6 +315,28 @@ func NewJvbCollector(namespace, subsystem, labels string, retention time.Duratio
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_participants", prometheus.GaugeValue,
 		"The total number of participants.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_keyframes_received", prometheus.CounterValue,
+		"The total number of keyframes that were received (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_layering_changes_received", prometheus.CounterValue,
+		"The total number of times the layering of an incoming video stream changed (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_video_stream_milliseconds_received", prometheus.CounterValue,
+		"The total duration, in milliseconds, of video streams (SSRCs) that were received (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_bytes_received", prometheus.CounterValue,
+		"The total number of bytes received in RTP packets in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_bytes_sent", prometheus.CounterValue,
+		"The total number of bytes sent in RTP packets in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_packets_received", prometheus.CounterValue,
+		"The total number of RTP packets received in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_packets_sent", prometheus.CounterValue,
+		"The total number of RTP packets sent in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
 	return collector
 }
 
