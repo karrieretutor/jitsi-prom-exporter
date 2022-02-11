@@ -66,7 +66,7 @@ type JvbCollector struct {
 
 //NewJvbCollector initializes a Jvb collector
 //namespace and subsystem may be empty if you dont need them, see https://godoc.org/github.com/prometheus/client_golang/prometheus#Opts
-func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbCollector {
+func NewJvbCollector(namespace, subsystem, labels string, retention time.Duration) *JvbCollector {
 	var collector = &JvbCollector{
 		Retention: retention,
 	}
@@ -88,12 +88,125 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 		"app": "jitsi",
 	}
 
-	//add metrics
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"packet_rate_download", prometheus.GaugeValue,
-		"download packet rate", []string{"jvb_instance"}, constLabels))
+	if labels != "" {
+		s := strings.Split(labels, ",")
+		for _, v := range s {
+			d := strings.Split(v, "=")
+			constLabels[d[0]] = d[1]
+		}
+	}
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_tcp_connections", prometheus.GaugeValue,
-		"number of open tcp connections", []string{"jvb_instance"}, constLabels))
+	//add metrics
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"inactive_endpoints", prometheus.GaugeValue,
+		"inactive endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"inactive_conferences", prometheus.GaugeValue,
+		"inactive conferences", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"muc_clients_connected", prometheus.GaugeValue,
+		"muc clients connected", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"p2p_conferences", prometheus.GaugeValue,
+		"p2p conferences", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_aimd_bwe_expirations", prometheus.GaugeValue,
+		"total aimd bwe expirations", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_send_bitrate", prometheus.GaugeValue,
+		"current outgoing bitrate on the octo channel (combined for all conferences) in bits per second.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_send_packet_rate", prometheus.GaugeValue,
+		"current outgoing packet rate on the octo channel (combined for all conferences) in packets per second.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_receive_bitrate", prometheus.GaugeValue,
+		"current incoming bitrate on the octo channel (combined for all conferences) in bits per second.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_receive_packet_rate", prometheus.GaugeValue,
+		"current incoming packet rate on the octo channel (combined for all conferences) in packets per second.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_dominant_speaker_changes", prometheus.CounterValue,
+		"total dominant speaker changes", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_succeeded", prometheus.CounterValue,
+		"total ice succeeded", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_succeeded_tcp", prometheus.CounterValue,
+		"total ice succeeded tcp", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_succeeded_relayed", prometheus.CounterValue,
+		"total ice succeeded relayed", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_ice_failed", prometheus.CounterValue,
+		"total ice failed", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"num_eps_no_msg_transport_after_delay", prometheus.GaugeValue,
+		"num endpoints no message transport after delay", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"mucs_configured", prometheus.GaugeValue,
+		"mucs configured", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"mucs_joined", prometheus.GaugeValue,
+		"mucs joined", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"muc_clients_configured", prometheus.GaugeValue,
+		"muc clients configured", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"incoming_loss", prometheus.GaugeValue,
+		"incoming loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"outgoing_loss", prometheus.GaugeValue,
+		"outgoing loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"overall_loss", prometheus.GaugeValue,
+		"overall loss", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conferences_by_video_senders", prometheus.UntypedValue,
+		"histogram of conference sizes by number of video senders", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conferences_by_audio_senders", prometheus.UntypedValue,
+		"histogram of conference sizes by number of audio senders", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"stress_level", prometheus.GaugeValue,
+		"stress level", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"average_participant_stress", prometheus.GaugeValue,
+		"average participant stress", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_endpoints", prometheus.GaugeValue,
+		"The current number of octo endpoints (connected to remove jitsi-videobridge instances).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_dropped_octo", prometheus.CounterValue,
+		"total number of packets dropped on the octo channel", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"dtls_failed_endpoints", prometheus.CounterValue,
+		"dtls failed endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"receive_only_endpoints", prometheus.GaugeValue,
+		"receive only endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"octo_conferences", prometheus.GaugeValue,
+		"The current number of conferences in which octo is enabled.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"num_eps_oversending", prometheus.GaugeValue,
+		"current number of endpoints to which we are oversending", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_with_high_outgoing_loss", prometheus.GaugeValue,
+		"number of endpoints with high outgoing loss (more than 10% loss in the bridge->endpoint direction)", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_with_spurious_remb", prometheus.GaugeValue,
+		"total number of endpoints which have sent an RTCP REMB packet when REMB was not signaled", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints", prometheus.GaugeValue,
+		"The current number of endpoints, including `octo` endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"local_endpoints", prometheus.GaugeValue,
+		"The current number of local (non-`octo`) endpoints", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"local_active_endpoints", prometheus.GaugeValue,
+		"The current number of local endpoints (not `octo`) which are in an active conference. This includes endpoints which are not sending audio or video, but are in an active conference (i.e. they are receive-only).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"packet_rate_download", prometheus.GaugeValue,
+		"current RTP incoming packet rate in packets per second", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conference_sizes", prometheus.UntypedValue,
 		"histogram of conference sizes (ie. how many conferences have 5 participants and so on)", []string{"jvb_instance"}, constLabels))
@@ -105,19 +218,10 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 		"The total number of participant-seconds that are loss-degraded.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"bit_rate_download", prometheus.GaugeValue,
-		"download rate kbit/s", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"videostreams", prometheus.GaugeValue,
-		"An estimation of the number of current video streams forwarded by the bridge.", []string{"jvb_instance"}, constLabels))
+		"The current incoming bitrate (RTP) in kilobits per second", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"jitter_aggregate", prometheus.GaugeValue,
 		"Experimental. An average value (in milliseconds) of the jitter calculated for incoming and outgoing streams. This hasn't been tested and it is currently not known whether the values are correct or not.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_channels", prometheus.GaugeValue,
-		"Current number of channels", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_memory", prometheus.GaugeValue,
-		"The total memory of the machine in megabytes.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_received", prometheus.CounterValue,
 		"Total number of packets received", []string{"jvb_instance"}, constLabels))
@@ -126,16 +230,22 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 		"An average value (in milliseconds) of the RTT across all streams.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"packet_rate_upload", prometheus.GaugeValue,
-		"Upload packets/s", []string{"jvb_instance"}, constLabels))
+		"current RTP outgoing packet rate in packets per second", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"conferences", prometheus.GaugeValue,
 		"The current number of conferences hosted by the bridge", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"participants", prometheus.GaugeValue,
-		"The current number of participants.", []string{"jvb_instance"}, constLabels))
+		"The current number of participants. Deprecated.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_loss_limited_participant_seconds", prometheus.CounterValue,
 		"The total number of participant-seconds that are loss-limited.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"preemptive_kfr_sent", prometheus.GaugeValue,
+		"The total number of preemptive keyframe requests sent.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"preemptive_kfr_suppressed", prometheus.GaugeValue,
+		"preemptive kfr suppressed", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"largest_conference", prometheus.GaugeValue,
 		"The current number of participants in the largest conference", []string{"jvb_instance"}, constLabels))
@@ -149,17 +259,8 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_bytes_received_octo", prometheus.CounterValue,
 		"The total number octo bytes sent.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_no_transport_channels", prometheus.GaugeValue,
-		"The current number of transport channels.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_no_payload_channels", prometheus.GaugeValue,
-		"The current number of payload channels.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"used_memory", prometheus.GaugeValue,
-		"Total used memory on the machine (i.e. what 'free' would return) in megabytes (10^6 B).", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"threads", prometheus.GaugeValue,
-		"The current number of threads.", []string{"jvb_instance"}, constLabels))
+		"The current number of JVM threads", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_colibri_web_socket_messages_received", prometheus.CounterValue,
 		"The total number messages received through COLIBRI web sockets.", []string{"jvb_instance"}, constLabels))
@@ -167,14 +268,8 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"videochannels", prometheus.GaugeValue,
 		"The current number of videochannels.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_udp_connections", prometheus.GaugeValue,
-		"The current number of udp connections.", []string{"jvb_instance"}, constLabels))
-
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"loss_rate_upload", prometheus.GaugeValue,
-		"The fraction of lost outgoing RTP packets. This is based on incoming RTCP Receiver Reports, and an attempt to subtract the fraction of packets that were not sent (i.e. were lost before they reached the bridge). Further, this is averaged over all streams of all users as opposed to all packets, so it is not correctly weighted. This is not accurate, but may be a useful metric nonetheless.", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_packets_received_octo", prometheus.CounterValue,
-		"Total octo packets received.", []string{"jvb_instance"}, constLabels))
+		"total number packets received on the octo channel", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_colibri_web_socket_messages_sent", prometheus.CounterValue,
 		"The total number messages sent through COLIBRI web sockets.", []string{"jvb_instance"}, constLabels))
@@ -185,17 +280,11 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_data_channel_messages_received", prometheus.CounterValue,
 		"Total data channel messages received.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"loss_rate_download", prometheus.GaugeValue,
-		"The fraction of lost incoming RTP packets. This is based on RTP sequence numbers and is relatively accurate.", []string{"jvb_instance"}, constLabels))
-
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_conference_seconds", prometheus.CounterValue,
 		"The sum of the lengths of all completed conferences, in seconds.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_bytes_received", prometheus.CounterValue,
 		"Total bytes received.", []string{"jvb_instance"}, constLabels))
-
-	// collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"rtp_loss", prometheus.CounterValue,
-	// 	"Deprecated. The sum of loss_rate_download and loss_rate_upload.", []string{"jvb_instance"}, constLabels))
 
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_loss_controlled_participant_seconds", prometheus.CounterValue,
 		"The total number of participant-seconds that are loss-controlled.", []string{"jvb_instance"}, constLabels))
@@ -215,11 +304,38 @@ func NewJvbCollector(namespace, subsystem string, retention time.Duration) *JvbC
 	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_failed_conferences", prometheus.CounterValue,
 		"The total number of failed conferences on the bridge. A conference is marked as failed when all of its channels have failed. A channel is marked as failed if it had no payload activity.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"cpu_usage", prometheus.GaugeValue,
-		"CPU usage for the machine. The value is between 0 and 1 and is the fraction of the last interval that the CPU spent in either user, nice, system or iowait state (what would appear in the 'cpu' line in 'top').", []string{"jvb_instance"}, constLabels))
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_sending_audio", prometheus.GaugeValue,
+		"The current number of sending audioendpoint on the bridge.", []string{"jvb_instance"}, constLabels))
 
-	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"audiochannels", prometheus.GaugeValue,
-		"The current number of audiochannels on the bridge.", []string{"jvb_instance"}, constLabels))
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"endpoints_sending_video", prometheus.GaugeValue,
+		"The current number of sending videoendpoint on the bridge.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_conferences_created", prometheus.GaugeValue,
+		"The total number of created conferences.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_participants", prometheus.GaugeValue,
+		"The total number of participants.", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_keyframes_received", prometheus.CounterValue,
+		"The total number of keyframes that were received (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_layering_changes_received", prometheus.CounterValue,
+		"The total number of times the layering of an incoming video stream changed (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_video_stream_milliseconds_received", prometheus.CounterValue,
+		"The total duration, in milliseconds, of video streams (SSRCs) that were received (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_bytes_received", prometheus.CounterValue,
+		"The total number of bytes received in RTP packets in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_bytes_sent", prometheus.CounterValue,
+		"The total number of bytes sent in RTP packets in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_packets_received", prometheus.CounterValue,
+		"The total number of RTP packets received in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
+
+	collector.metrics = append(collector.metrics, newMetric(collector.NamePrefix+"total_relay_packets_sent", prometheus.CounterValue,
+		"The total number of RTP packets sent in relays in this conference (updated on endpoint expiration).", []string{"jvb_instance"}, constLabels))
 
 	return collector
 }
@@ -242,7 +358,9 @@ func (c *JvbCollector) Collect(metrics chan<- prometheus.Metric) {
 					if metric.name == c.NamePrefix+stat.Name {
 
 						//special case for conference_sizes
-						if metric.name == c.NamePrefix+"conference_sizes" {
+						if (metric.name == c.NamePrefix+"conference_sizes") ||
+							(metric.name == c.NamePrefix+"conferences_by_video_senders") ||
+							(metric.name == c.NamePrefix+"conferences_by_audio_senders") {
 							conSizes, sum := conferenceSizesHelper(stat.Value)
 							m, err := prometheus.NewConstHistogram(metric.desc, sum, float64(sum), conSizes, set.jvbIdentifier)
 

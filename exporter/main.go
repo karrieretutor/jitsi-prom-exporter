@@ -33,8 +33,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	xmpp "github.com/FluuxIO/go-xmpp"
 	uuid "github.com/satori/go.uuid"
+	xmpp "gosrc.io/xmpp"
 	stanza "gosrc.io/xmpp/stanza"
 )
 
@@ -59,7 +59,7 @@ var (
 	jvbbrewery string
 	cm         *xmpp.StreamManager
 
-	jvbCollector = NewJvbCollector(os.Getenv("JVB_METRIC_NAMESPACE"), os.Getenv("JVB_METRIC_SUBSYSTEM"), 30*time.Second)
+	jvbCollector = NewJvbCollector(os.Getenv("JVB_METRIC_NAMESPACE"), os.Getenv("JVB_METRIC_SUBSYSTEM"), os.Getenv("JVB_METRIC_LABELS"), 30*time.Second)
 )
 
 func init() {
@@ -83,44 +83,53 @@ func main() {
 		}
 	}()
 
+	// get port on which promexp will listen
+	promexpPort, ok := os.LookupEnv("PROMEXP_PORT")
+	if !ok || promexpPort == "" {
+		fmt.Println("Port not specified, using default port 8080")
+		promexpPort = "8080"
+	}
+
 	//read credentials and stuff from environment
-	xmppUser, ok := os.LookupEnv("XMPP_USER")
-	if !ok {
+	xmppUser, ok := os.LookupEnv("PROMEXP_AUTH_USER")
+	if !ok || xmppUser == "" {
 		fmt.Println("No user specified, failing")
 		os.Exit(2)
 	}
 
-	xmppPw, ok := os.LookupEnv("XMPP_PW")
-	if !ok {
+	xmppPw, ok := os.LookupEnv("PROMEXP_AUTH_PASSWORD")
+	if !ok || xmppPw == "" {
 		fmt.Println("No password specified, failing")
 		os.Exit(2)
 	}
 
 	xmppAuthDomain, ok := os.LookupEnv("XMPP_AUTH_DOMAIN")
-	if !ok {
-		fmt.Println("no xmpp auth domain specified")
+	if !ok || xmppAuthDomain == "" {
+		fmt.Println("no xmpp auth domain specified, failing")
 		os.Exit(2)
 	}
 
 	xmppPort, ok := os.LookupEnv("XMPP_PORT")
 	if !ok || xmppPort == "" {
+		fmt.Println("No xmpp port specified, using default port 5222")
 		xmppPort = "5222"
 	}
 
 	xmppServer, ok := os.LookupEnv("XMPP_SERVER")
-	if !ok {
-		fmt.Println("no xmpp server specified")
+	if !ok || xmppServer == "" {
+		fmt.Println("no xmpp server specified, failing")
 		os.Exit(2)
 	}
 
-	breweryroom, ok := os.LookupEnv("JVB_BREWERY_MUC")
-	if !ok || breweryroom == "" {
-		breweryroom = "jvbbrewery"
+	breweryRoom, ok := os.LookupEnv("JVB_BREWERY_MUC")
+	if !ok || breweryRoom == "" {
+		fmt.Println("No xmpp jvb brewery muc specified, using default 'jvbbrewery'")
+		breweryRoom = "jvbbrewery"
 	}
 
 	internalMucDomain, ok := os.LookupEnv("XMPP_INTERNAL_MUC_DOMAIN")
-	if !ok {
-		fmt.Println("internal muc domain not specified")
+	if !ok || internalMucDomain == "" {
+		fmt.Println("internal muc domain not specified, failing")
 		os.Exit(2)
 	}
 
@@ -142,17 +151,20 @@ func main() {
 		}
 	}()
 
-	jvbbrewery = breweryroom + "@" + internalMucDomain
+	jvbbrewery = breweryRoom + "@" + internalMucDomain
 
 	jid := xmppUser + "@" + xmppAuthDomain
 	address := xmppServer + ":" + xmppPort
 	config := xmpp.Config{
-		Address:      address,
+		TransportConfiguration: xmpp.TransportConfiguration{
+			Address:   address,
+			Domain:    xmppAuthDomain,
+			TLSConfig: &tls.Config{InsecureSkipVerify: true},
+		},
 		Jid:          jid,
-		Password:     xmppPw,
+		Credential:   xmpp.Password(xmppPw),
 		StreamLogger: os.Stdout,
-		Insecure:     true,
-		TLSConfig:    &tls.Config{InsecureSkipVerify: true},
+		Insecure:     false,
 	}
 
 	router := xmpp.NewRouter()
@@ -168,7 +180,7 @@ func main() {
 	//start serving prom metrics
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(":"+promexpPort, nil)
 		if err != nil {
 			fmt.Printf("Unable to serve prom metrics: %s\n", err.Error())
 			signals <- iFail
@@ -213,7 +225,6 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 	}
 
 	if presence.Get(&Stats{}) && presence.Get(&User{}) {
-		var jvbJid string
 		var stats *Stats
 
 		//check extensions
@@ -221,15 +232,11 @@ func handlePresence(s xmpp.Sender, p stanza.Packet) {
 			switch extension := e.(type) {
 			case *Stats:
 				stats = extension
-			case *User:
-				for _, i := range extension.Items {
-					jvbJid = i.Jid
-				}
 			}
 		}
 
 		//we want to keep track of jvbs across their reconnects of autoscaled sets
-		jvbCollector.Update(strings.Split(jvbJid, "@")[0], stats)
+		jvbCollector.Update(strings.Split(presence.From, "/")[1], stats)
 	}
 }
 
@@ -242,7 +249,7 @@ func postConnect(s xmpp.Sender) {
 		signals <- iFail
 	}
 
-	uuid, _ := uuid.NewV4()
+	uuid := uuid.NewV4()
 	id := uuid.String()
 
 	//join jvbbrewery room
@@ -261,10 +268,9 @@ func postConnect(s xmpp.Sender) {
 }
 
 func connectClient(c xmpp.Config, r *xmpp.Router) {
-	client, err := xmpp.NewClient(c, r)
+	client, err := xmpp.NewClient(&c, r, errorHandler)
 	if err != nil {
 		fmt.Printf("unable to create client: %s\n", err.Error())
-		signals <- iFail
 	}
 
 	fmt.Println("starting streammanger")
@@ -281,4 +287,9 @@ func connectClient(c xmpp.Config, r *xmpp.Router) {
 	fmt.Println("XMPP connection closed, exiting.")
 	signals <- iExit
 	return
+}
+
+// If an error occurs, this is used to kill the client
+func errorHandler(err error) {
+	signals <- iFail
 }
